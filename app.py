@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 PORT = 'COM6' 
 BAUD = 9600
-ser = serial.Serial(PORT, BAUD, timeout=1)
+# ser = serial.Serial(PORT, BAUD, timeout=1)
 ser_lock = threading.Lock()
 
 # 한개의 listener로 threading 처리

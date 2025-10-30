@@ -11,11 +11,12 @@
 </head>
 <body class="bg-light">
     <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
-        <h2 class="mb-4 text-center">차단기 동작</h2>
+        <h2 class="mb-4 text-center">주차 시스템 관리</h2>
 
         <div class="d-grid gap-3 col-10 mx-auto">
-            <button type="button" id="openBtn" class="btn btn-success btn-lg">Open</button>
-            <button type="button" id="closeBtn" class="btn btn-danger btn-lg">Close</button>
+            <button type="button" id="openBtn" class="btn btn-success btn-lg">열기</button>
+            <button type="button" id="closeBtn" class="btn btn-danger btn-lg">닫기</button>
+            <button type="button" id="randarBtn" class="btn btn-primary btn-lg">렌더</button>
         </div>
     </div>
 
@@ -31,6 +32,10 @@
     // clsoe
     $("#closeBtn").on("click", function () {
         fn_reqGateCtrl("close");
+    });
+
+    $("#randarBtn").on("click", function() {
+        window.location.href = "/radar"; // 또는 "/radar.html" 등 실제 경로
     });
 
 // 게이트 액션에 따른 요청 함수

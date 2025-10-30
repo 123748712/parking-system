@@ -105,8 +105,6 @@ void runCCTVScan() {
   forward = !forward;
 }
 
-
-
 int getDistance() {
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
