@@ -9,11 +9,12 @@ public:
     ParkingGate(uint8_t servoPin);
     void begin();
     void update();
-
-private:
     void openGate();
     void closeGate();
 
+
+private:
+    
     Servo gateServo;
     uint8_t SERVO_PIN;
     int state;  // 0 = closed, 1 = open

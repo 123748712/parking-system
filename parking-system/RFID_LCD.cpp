@@ -62,8 +62,7 @@ String RFID_LCD::getSpotId() {
 
 // 부저 울리기
 void RFID_LCD::buzz(int duration_ms) {
-    digitalWrite(_buzzerPin, HIGH);
+    tone(_buzzerPin, 262);
     delay(duration_ms);
-    digitalWrite(_buzzerPin, LOW);
+    noTone(_buzzerPin);
 }
-
