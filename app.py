@@ -37,6 +37,18 @@ def serial_listener():
                 insert_parking_log(data)
                 continue
 
+            try:
+                if "," in data:
+                    angle_str, dist_str = data.split(",")
+                    angle = int(angle_str)
+                    distance = int(dist_str)
+                    with radar_data_lock:
+                        radar_data.append((angle, distance))
+                        if len(radar_data) > 2:  # 최근 100개만 유지
+                            radar_data.pop(0)
+            except ValueError:
+                print("⚠️ 레이더 데이터 파싱 실패:", data)
+
             # RFID 데이터 처리
             try:
                 jsonData = json.loads(data)
@@ -101,7 +113,21 @@ def fn_reqGateCtrl():
                 return jsonify({"error": "시리얼 전송 실패"}), 500
         else:
             return jsonify({"error": "시리얼 포트 연결 실패"}), 500
-        
+
+radar_data = []  # (angle, distance) 튜플 리스트
+radar_data_lock = threading.Lock()
+
+
+@app.route("/radar.do", methods=["GET"])
+def get_radar_data():
+    with radar_data_lock:
+        return jsonify(radar_data)
+
+@app.route("/radar", methods=["GET"])
+def radar():
+    return render_template('radar.html')
+    
+
 
 if __name__ == '__main__':
     listener_thread = threading.Thread(target=serial_listener, daemon=True)

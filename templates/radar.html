@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Radar Visualization</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #001000 0%, #000 80%);
+      color: lime;
+      font-family: "Consolas", monospace;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background: radial-gradient(circle at center, #001000 0%, #000 80%);
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="radarCanvas" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("radarCanvas");
+    const ctx = canvas.getContext("2d");
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height - 40;
+    const maxRange = 300;
+
+    let currentAngle = 0;
+    let radarData = [];
+
+    // 레이더 데이터 받아오기
+    async function fetchRadar() {
+      try {
+        const res = await fetch("/radar.do");
+        const data = await res.json(); // [[angle, distance], ...]
+        if (data.length > 0) {
+          const [angle, distance] = data[data.length - 1];
+          currentAngle = angle;
+          radarData = data;
+        }
+      } catch (e) {
+        console.error("Radar fetch failed", e);
+      }
+    }
+
+    // 부드러운 잔상 효과를 위한 반투명 배경
+    function fadeBackground() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 격자 그리기
+    function drawGrid() {
+      ctx.save();
+      ctx.strokeStyle = "rgba(0,255,0,0.3)";
+      ctx.lineWidth = 1;
+
+      // 원형 눈금
+      for (let r = 100; r <= 300; r += 100) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, r, Math.PI, 2 * Math.PI);
+        ctx.stroke();
+      }
+
+      // 각도 선
+      for (let a = 30; a <= 150; a += 30) {
+        const rad = a * Math.PI / 180;
+        const x = centerX + maxRange * Math.cos(rad);
+        const y = centerY - maxRange * Math.sin(rad);
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+
+      // 각도 라벨
+      ctx.fillStyle = "lime";
+      ctx.font = "13px Consolas";
+      const labels = [30, 60, 90, 120, 150];
+      labels.forEach(a => {
+        const rad = a * Math.PI / 180;
+        const x = centerX + (maxRange + 20) * Math.cos(rad);
+        const y = centerY - (maxRange + 10) * Math.sin(rad);
+        ctx.fillText(`${a}°`, x - 10, y);
+      });
+
+      ctx.restore();
+    }
+
+    // 스캔 라인 및 영역
+    function drawScanLine() {
+      const rad = currentAngle * Math.PI / 180;
+
+      // 스캔 그라데이션 (초록색 퍼짐 효과)
+      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRange);
+      gradient.addColorStop(0, "rgba(0,255,0,0.05)");
+      gradient.addColorStop(0.6, "rgba(0,255,0,0.15)");
+      gradient.addColorStop(1, "rgba(0,255,0,0)");
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, maxRange, Math.PI, Math.PI + rad);
+      ctx.closePath();
+      ctx.fill();
+
+      // 스캔 라인
+      const x = centerX + maxRange * Math.cos(rad);
+      const y = centerY - maxRange * Math.sin(rad);
+      const glow = ctx.createLinearGradient(centerX, centerY, x, y);
+      glow.addColorStop(0, "rgba(0,255,0,0.1)");
+      glow.addColorStop(1, "rgba(0,255,0,1)");
+
+      ctx.strokeStyle = glow;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+
+    // 감지된 객체 표시
+    function drawObjects() {
+      for (let [angle, distance] of radarData) {
+        const r = distance * 7.5;
+        const aRad = angle * Math.PI / 180;
+        const px = centerX + r * Math.cos(aRad);
+        const py = centerY - r * Math.sin(aRad);
+
+        ctx.fillStyle = "red";
+        ctx.shadowColor = "rgba(255,0,0,0.8)";
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(px, py, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      ctx.shadowBlur = 0; // 그림자 초기화
+    }
+
+    // 하단 텍스트
+    function drawInfo() {
+      ctx.fillStyle = "lime";
+      ctx.font = "15px Consolas";
+      ctx.fillText("parking-system", 20, canvas.height - 10);
+      ctx.fillText(`Angle: ${currentAngle}°`, 250, canvas.height - 10);
+
+      const last = radarData.at(-1);
+      const dist = last ? last[1] : 0;
+      ctx.fillText(`Distance: ${dist}cm`, 420, canvas.height - 10);
+    }
+
+    // 전체 업데이트
+    function updateRadar() {
+      fadeBackground(); // 부드러운 잔상
+      drawGrid();
+      drawObjects();
+      drawScanLine();
+      drawInfo();
+      fetchRadar();
+    }
+
+    setInterval(updateRadar, 100);
+  </script>
+</body>
+</html>

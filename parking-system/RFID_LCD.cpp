@@ -6,6 +6,8 @@ RFID_LCD::RFID_LCD(uint8_t ssPin, uint8_t rstPin, uint8_t lcdAddr, uint8_t lcdCo
     lcd  = new LiquidCrystal_I2C(_lcdAddr, _lcdCols, _lcdRows);
 }
 
+#define LED 7
+
 // 초기화
 void RFID_LCD::begin() {
     SPI.begin();
@@ -14,7 +16,6 @@ void RFID_LCD::begin() {
     lcd->backlight();
     lcd->setCursor(0, 0);
     lcd->print("RFID Ready");
-
     pinMode(_buzzerPin, OUTPUT); // 부저 핀 초기화
 }
 

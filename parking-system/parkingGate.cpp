@@ -23,11 +23,13 @@ void ParkingGate::update() {
                 if (command == "open") {
                     gateServo.write(120);
                     Serial.println("게이트 열림");
+                    gateServo.detach();
                     state = 1;
                 }
                 else if (command == "close") {
                     gateServo.write(0);
                     Serial.println("게이트 닫힘");
+                    gateServo.detach();
                     state = 0;
                 }
             }
