@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 PORT = 'COM6' 
 BAUD = 9600
-# ser = serial.Serial(PORT, BAUD, timeout=1)
+ser = serial.Serial(PORT, BAUD, timeout=1)
 ser_lock = threading.Lock()
 
 # 한개의 listener로 threading 처리
@@ -52,12 +52,14 @@ def serial_listener():
             # RFID 데이터 처리
             try:
                 jsonData = json.loads(data)
-                rfid_tag = jsonData.get("rfid_tag")
-                spot_id = jsonData.get("spot_id")
-                car_id = check_rfid_match(spot_id, rfid_tag)
-                print(f"차량번호 : {car_id}")
-                with ser_lock:
-                    ser.write(f"{car_id}\n".encode())
+                print("여기 테스트 ::::::::::::::::::::::::: ", isinstance(jsonData, dict))
+                if isinstance(jsonData, dict):
+                    rfid_tag = jsonData.get("rfid_tag")
+                    spot_id = jsonData.get("spot_id")
+                    car_id = check_rfid_match(spot_id, rfid_tag)
+                    print(f"차량번호 : {car_id}")
+                    with ser_lock:
+                        ser.write(f"{car_id}\n".encode())
             except json.JSONDecodeError:
                 print("⚠️ JSON 파싱 실패:", data)
 

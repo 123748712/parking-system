@@ -68,7 +68,6 @@ void loop() {
     // RFID 카드 인식 처리
     String uid;
     rfidLcd.writeCardUID(uid);
-
     if (uid.length() > 0 && uid != "0") {
         String jsonData = "{\"rfid_tag\":\"" + uid + "\",\"spot_id\":\"" + rfidLcd.getSpotId() + "\"}";
         Serial.println(jsonData);
